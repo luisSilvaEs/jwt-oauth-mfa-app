@@ -1,0 +1,108 @@
+# =============================================================================
+# docker-compose.yml
+# jwt-oauth-mfa-app — Development Database Stack
+# =============================================================================
+# This file defines the services that Docker will run for local development.
+# We only containerize the DATABASE layer here — the backend (Spring Boot) and
+# frontend (React) run locally for a faster dev experience (hot reload, etc.).
+#
+# Usage:
+#   Start:   docker compose up -d
+#   Stop:    docker compose down
+#   Logs:    docker compose logs -f
+#   Reset:   docker compose down -v   ← WARNING: deletes all DB data
+# =============================================================================
+
+version: "3.9"
+
+# -----------------------------------------------------------------------------
+# NAMED VOLUMES
+# Docker volumes are how we persist data across container restarts.
+# Without this, every `docker compose down` would wipe your database.
+# -----------------------------------------------------------------------------
+volumes:
+  postgres_data:   # Stores PostgreSQL data files
+  pgadmin_data:    # Stores pgAdmin settings and saved connections
+
+# -----------------------------------------------------------------------------
+# SERVICES
+# Each "service" is a container. We define two: the database and a DB GUI.
+# -----------------------------------------------------------------------------
+services:
+
+  # ---------------------------------------------------------------------------
+  # SERVICE 1: PostgreSQL
+  # This is the main database for our auth app.
+  # Spring Boot will connect to this via JDBC on port 5432.
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine          # Alpine = smaller image, same functionality
+    container_name: jwt_mfa_postgres   # Fixed name so it's easy to reference
+
+    # Environment variables configure the Postgres instance on first startup.
+    # These MUST match what you'll put in your Spring Boot application.yml later.
+    environment:
+      POSTGRES_DB: authdb              # The database our app will use
+      POSTGRES_USER: authuser          # The DB user Spring Boot will authenticate as
+      POSTGRES_PASSWORD: authpass      # Change this if deploying anywhere non-local
+
+    # Port mapping: host:container
+    # This means you can connect to Postgres from your machine at localhost:5432
+    ports:
+      - "5432:5432"
+
+    # Mount the named volume so data survives container restarts
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # Health check: Docker will poll this command to know if Postgres is ready.
+    # Other services can use `depends_on: condition: service_healthy` to wait for it.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
+      interval: 10s   # Check every 10 seconds
+      timeout: 5s     # Fail if no response within 5 seconds
+      retries: 5      # Mark as unhealthy after 5 consecutive failures
+
+    # Restart policy: automatically restart if the container crashes
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # SERVICE 2: pgAdmin 4
+  # A web-based GUI for browsing your PostgreSQL database.
+  # Useful for inspecting tables, running queries, and debugging data.
+  # Access it at: http://localhost:5050
+  # Login with the email/password defined below.
+  # ---------------------------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: jwt_mfa_pgadmin
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev     # Login email for pgAdmin UI
+      PGADMIN_DEFAULT_PASSWORD: adminpass        # Login password for pgAdmin UI
+      PGADMIN_CONFIG_SERVER_MODE: "False"        # Runs in desktop mode (no multi-user)
+
+    ports:
+      - "5050:80"   # pgAdmin UI will be available at http://localhost:5050
+
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin   # Persist pgAdmin settings
+
+    # Wait for Postgres to be healthy before starting pgAdmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+# =============================================================================
+# SPRING BOOT CONNECTION REFERENCE
+# When you set up application.yml in the backend, use these values:
+#
+#   spring:
+#     datasource:
+#       url: jdbc:postgresql://localhost:5432/authdb
+#       username: authuser
+#       password: authpass
+#
+# =============================================================================
