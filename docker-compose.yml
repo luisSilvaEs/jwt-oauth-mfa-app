@@ -13,8 +13,6 @@
 #   Reset:   docker compose down -v   ← WARNING: deletes all DB data
 # =============================================================================
 
-version: "3.9"
-
 # -----------------------------------------------------------------------------
 # NAMED VOLUMES
 # Docker volumes are how we persist data across container restarts.
