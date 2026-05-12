@@ -2,6 +2,7 @@ package com.luissilvacoding.jwt_oauth_mfa_app.controller;
 
 import com.luissilvacoding.jwt_oauth_mfa_app.entity.User;
 import com.luissilvacoding.jwt_oauth_mfa_app.repository.UserRepository;
+import com.luissilvacoding.jwt_oauth_mfa_app.util.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +21,12 @@ public class AuthController {
      */
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     public AuthController(UserRepository userRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
+        this.jwtUtil = new JwtUtil();
     }
 
     /*
@@ -67,7 +70,10 @@ public class AuthController {
 
         return userRepository.findByEmail(email)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
-                .map(user -> ResponseEntity.ok().body(Map.of("message", "Login successful")))
+                .map(user -> {
+                    String token = jwtUtil.generateToken(user.getEmail());
+                    return ResponseEntity.ok().body(Map.of("token", token));
+                })
                 .orElse(ResponseEntity.status(401).body(Map.of("error", "Invalid credentials")));
     }
 }
