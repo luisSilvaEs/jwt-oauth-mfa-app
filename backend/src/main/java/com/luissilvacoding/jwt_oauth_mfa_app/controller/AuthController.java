@@ -3,6 +3,12 @@ package com.luissilvacoding.jwt_oauth_mfa_app.controller;
 import com.luissilvacoding.jwt_oauth_mfa_app.entity.User;
 import com.luissilvacoding.jwt_oauth_mfa_app.repository.UserRepository;
 import com.luissilvacoding.jwt_oauth_mfa_app.util.JwtUtil;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "JWT Auth", description = "Operations related to JWT auth")
 public class AuthController {
     /*
      * 'final' use:
@@ -36,6 +43,12 @@ public class AuthController {
      * - Spring sees @RequestBody and converts that JSON into whatever type you
      * declared next to it.
      */
+
+    @Operation(summary = "Register", description = "Checks if the email exists, hashes the password with BCrypt, and saves the user")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Bad request")
+    })
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -63,6 +76,11 @@ public class AuthController {
      * "I don't know or care what type this will be at compile time."
      * 
      */
+    @Operation(summary = "Login", description = "looks up the user by email and verifies the password")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Returns JWT token"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+    })
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         String email = body.get("email");
