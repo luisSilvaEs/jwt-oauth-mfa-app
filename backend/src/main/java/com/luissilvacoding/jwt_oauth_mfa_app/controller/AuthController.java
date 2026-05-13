@@ -41,10 +41,10 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final MfaService mfaService;
 
-    public AuthController(UserRepository userRepository, MfaService mfaService) {
+    public AuthController(UserRepository userRepository, JwtUtil jwtUtil, MfaService mfaService) {
         this.userRepository = userRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
-        this.jwtUtil = new JwtUtil();
+        this.jwtUtil = jwtUtil;
         this.mfaService = mfaService;
     }
 
@@ -120,6 +120,25 @@ public class AuthController {
                 .orElseGet(() -> ResponseEntity.status(401).body(new ErrorResponse("Invalid credentials")));
     }
 
+    @Operation(summary = "MFA Login", description = "Verifies the 6-digit TOTP code after a successful login with MFA enabled. Returns a signed JWT token on success.")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = MfaLoginRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Returns a signed JWT token", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                        {
+                          "token": "eyJhbGciOiJIUzI1NiJ9..."
+                        }
+                    """))),
+            @ApiResponse(responseCode = "401", description = "Invalid MFA code", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                        {
+                          "error": "Invalid MFA code"
+                        }
+                    """))),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                        {
+                          "error": "User not found"
+                        }
+                    """)))
+    })
     @PostMapping("/mfa-login")
     public ResponseEntity<?> mfaLogin(@org.springframework.web.bind.annotation.RequestBody MfaLoginRequest body) {
         return userRepository.findByEmail(body.email)
