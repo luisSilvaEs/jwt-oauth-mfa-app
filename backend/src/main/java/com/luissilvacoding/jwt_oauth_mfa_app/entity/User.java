@@ -26,8 +26,23 @@ public class User {
     @Column(nullable = false)
     private String role = "ROLE_USER";
 
+    /**
+     * Hibernate looks at the Java field name and converts it automatically using
+     * its naming strategy. mfaEnabled becomes mfa_enabled in the DB, mfaSecret
+     * becomes mfa_secret. Spring Boot's default naming strategy handles camelCase →
+     * snake_case conversion automatically.
+     */
     @Column(nullable = false)
     private boolean mfaEnabled = false;
+    /**
+     * The alternative (explicit name)
+     * 
+     * - @Column(name = "mfa_enabled")
+     * private boolean mfaEnabled = false;
+     * 
+     * - @Column(name = "mfa_secret")
+     * private String mfaSecret;
+     */
 
     private String mfaSecret;
 
