@@ -5,6 +5,10 @@ import com.luissilvacoding.jwt_oauth_mfa_app.repository.UserRepository;
 import com.luissilvacoding.jwt_oauth_mfa_app.util.JwtUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,7 +17,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import com.luissilvacoding.jwt_oauth_mfa_app.dto.ErrorResponse;
+import com.luissilvacoding.jwt_oauth_mfa_app.dto.LoginRequest;
+import com.luissilvacoding.jwt_oauth_mfa_app.dto.LoginResponse;
+import com.luissilvacoding.jwt_oauth_mfa_app.dto.RegisterRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -45,15 +52,16 @@ public class AuthController {
      */
 
     @Operation(summary = "Register", description = "Checks if the email exists, hashes the password with BCrypt, and saves the user")
+    @RequestBody(required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegisterRequest.class)))
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "User registered successfully"),
-            @ApiResponse(responseCode = "400", description = "Bad request")
+            @ApiResponse(responseCode = "200", description = "User registered successfully", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "\"User registered successfully\""))),
+            @ApiResponse(responseCode = "400", description = "Email already in use", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "\"Email already in use\"")))
     })
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
-        String password = body.get("password");
-        String name = body.get("name");
+    public ResponseEntity<?> register(@org.springframework.web.bind.annotation.RequestBody RegisterRequest body) {
+        String email = body.email;
+        String password = body.password;
+        String name = body.name;
 
         if (userRepository.existsByEmail(email)) {
             return ResponseEntity.badRequest().body("Email already in use");
@@ -76,22 +84,31 @@ public class AuthController {
      * "I don't know or care what type this will be at compile time."
      * 
      */
-    @Operation(summary = "Login", description = "looks up the user by email and verifies the password")
+    @Operation(summary = "Login", description = "Looks up the user by email and verifies the password, returns a signed JWT token on success")
+    @RequestBody(required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginRequest.class)))
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Returns JWT token"),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+            @ApiResponse(responseCode = "200", description = "Returns a signed JWT token", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                        {
+                          "token": "eyJhbGciOiJIUzI1NiJ9..."
+                        }
+                    """))),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                        {
+                          "error": "Invalid credentials"
+                        }
+                    """)))
     })
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
-        String password = body.get("password");
+    public ResponseEntity<?> login(@org.springframework.web.bind.annotation.RequestBody LoginRequest body) {
+        String email = body.email;
+        String password = body.password;
 
         return userRepository.findByEmail(email)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
-                .map(user -> {
+                .<ResponseEntity<?>>map(user -> {
                     String token = jwtUtil.generateToken(user.getEmail());
-                    return ResponseEntity.ok().body(Map.of("token", token));
+                    return ResponseEntity.ok(new LoginResponse(token));
                 })
-                .orElse(ResponseEntity.status(401).body(Map.of("error", "Invalid credentials")));
+                .orElseGet(() -> ResponseEntity.status(401).body(new ErrorResponse("Invalid credentials")));
     }
 }
