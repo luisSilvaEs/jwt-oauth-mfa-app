@@ -2,6 +2,7 @@ package com.luissilvacoding.jwt_oauth_mfa_app.controller;
 
 import com.luissilvacoding.jwt_oauth_mfa_app.entity.User;
 import com.luissilvacoding.jwt_oauth_mfa_app.repository.UserRepository;
+import com.luissilvacoding.jwt_oauth_mfa_app.service.MfaService;
 import com.luissilvacoding.jwt_oauth_mfa_app.util.JwtUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +22,8 @@ import com.luissilvacoding.jwt_oauth_mfa_app.dto.ErrorResponse;
 import com.luissilvacoding.jwt_oauth_mfa_app.dto.LoginRequest;
 import com.luissilvacoding.jwt_oauth_mfa_app.dto.LoginResponse;
 import com.luissilvacoding.jwt_oauth_mfa_app.dto.RegisterRequest;
+import com.luissilvacoding.jwt_oauth_mfa_app.dto.MfaRequiredResponse;
+import com.luissilvacoding.jwt_oauth_mfa_app.dto.MfaLoginRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -36,11 +39,13 @@ public class AuthController {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final MfaService mfaService;
 
-    public AuthController(UserRepository userRepository) {
+    public AuthController(UserRepository userRepository, JwtUtil jwtUtil, MfaService mfaService) {
         this.userRepository = userRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
-        this.jwtUtil = new JwtUtil();
+        this.jwtUtil = jwtUtil;
+        this.mfaService = mfaService;
     }
 
     /*
@@ -106,9 +111,44 @@ public class AuthController {
         return userRepository.findByEmail(email)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
                 .<ResponseEntity<?>>map(user -> {
+                    if (user.isMfaEnabled()) {
+                        return ResponseEntity.ok(new MfaRequiredResponse(true, user.getEmail()));
+                    }
                     String token = jwtUtil.generateToken(user.getEmail());
                     return ResponseEntity.ok(new LoginResponse(token));
                 })
                 .orElseGet(() -> ResponseEntity.status(401).body(new ErrorResponse("Invalid credentials")));
+    }
+
+    @Operation(summary = "MFA Login", description = "Verifies the 6-digit TOTP code after a successful login with MFA enabled. Returns a signed JWT token on success.")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = MfaLoginRequest.class)))
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Returns a signed JWT token", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                        {
+                          "token": "eyJhbGciOiJIUzI1NiJ9..."
+                        }
+                    """))),
+            @ApiResponse(responseCode = "401", description = "Invalid MFA code", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                        {
+                          "error": "Invalid MFA code"
+                        }
+                    """))),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                        {
+                          "error": "User not found"
+                        }
+                    """)))
+    })
+    @PostMapping("/mfa-login")
+    public ResponseEntity<?> mfaLogin(@org.springframework.web.bind.annotation.RequestBody MfaLoginRequest body) {
+        return userRepository.findByEmail(body.email)
+                .<ResponseEntity<?>>map(user -> {
+                    if (!mfaService.verifyCode(user.getMfaSecret(), body.code)) {
+                        return ResponseEntity.status(401).body(new ErrorResponse("Invalid MFA code"));
+                    }
+                    String token = jwtUtil.generateToken(user.getEmail());
+                    return ResponseEntity.ok(new LoginResponse(token));
+                })
+                .orElseGet(() -> ResponseEntity.status(404).body(new ErrorResponse("User not found")));
     }
 }
