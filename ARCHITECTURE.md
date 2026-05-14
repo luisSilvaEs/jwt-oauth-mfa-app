@@ -40,16 +40,24 @@ backend/
 └── .mvn/
 
 frontend/
-├── src/
-│   ├── api/              # Axios instances, API call functions
-│   ├── components/       # Reusable UI components
-│   ├── context/          # AuthContext (JWT state, user info)
-│   ├── hooks/            # useAuth, useMfa custom hooks
-│   ├── pages/            # Login, Register, MfaSetup, MfaVerify, Home, Profile
-│   ├── routes/           # ProtectedRoute, AppRouter
-│   ├── types/            # TypeScript interfaces/types
-│   └── main.tsx
-├── index.html
+src/
+├── api/
+│   └── client.ts             ← fetch wrapper + JWT header
+├── context/
+│   └── AuthContext.tsx       ← shared auth state
+├── pages/
+│   ├── Login.tsx
+│   ├── Register.tsx
+│   ├── Home.tsx
+│   ├── Profile.tsx
+│   ├── MfaSetup.tsx
+│   └── MfaVerify.tsx
+├── components/
+│   └── ProtectedRoute.tsx    ← redirects if no token
+├── types/
+│   └── auth.ts               ← shared TS interfaces
+├── App.tsx                   ← router setup
+└── main.tsx                  ← entry point
 ├── vite.config.ts
 ├── tsconfig.json
 └── .env.example
