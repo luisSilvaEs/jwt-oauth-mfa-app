@@ -1,3 +1,4 @@
+//frontend/src/context/AuthContext.ts
 import { createContext } from "react";
 import type { User } from "../types/auth";
 
