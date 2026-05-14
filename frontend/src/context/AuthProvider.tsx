@@ -1,4 +1,5 @@
-import { useContext, useEffect, useState } from "react";
+//frontend/src/context/AuthProvider.tsx
+import { useState } from "react";
 import type { ReactNode } from "react";
 import type { User } from "../types/auth";
 import AuthContext from "./AuthContext";

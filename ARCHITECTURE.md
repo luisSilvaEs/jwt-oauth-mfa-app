@@ -42,9 +42,12 @@ backend/
 frontend/
 src/
 ├── api/
-│   └── client.ts             ← fetch wrapper + JWT header
+│   └── client.ts
 ├── context/
-│   └── AuthContext.tsx       ← shared auth state
+│   ├── AuthContext.ts
+│   └── AuthProvider.tsx
+├── hooks/
+│   └── useAuth.ts
 ├── pages/
 │   ├── Login.tsx
 │   ├── Register.tsx
@@ -53,11 +56,12 @@ src/
 │   ├── MfaSetup.tsx
 │   └── MfaVerify.tsx
 ├── components/
-│   └── ProtectedRoute.tsx    ← redirects if no token
+│   ├── ProtectedRoute.tsx
+│   └── WorkInProgress.tsx
 ├── types/
-│   └── auth.ts               ← shared TS interfaces
-├── App.tsx                   ← router setup
-└── main.tsx                  ← entry point
+│   └── auth.ts
+├── App.tsx
+└── main.tsx
 ├── vite.config.ts
 ├── tsconfig.json
 └── .env.example
