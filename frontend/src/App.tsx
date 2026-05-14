@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WorkInProgress from "./components/WorkInProgress";
 import Register from "./pages/Register";
+import Login from "./pages/Login";
 
 export default function App() {
   return (
@@ -10,7 +11,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           {/* Public routes */}
-          <Route path="/login" element={<WorkInProgress pageName="Login" />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route
             path="/mfa/setup"
