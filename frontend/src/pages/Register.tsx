@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import FormRegister from "../components/forms/FormRegister";
 
 const Register = () => {
+  const [showForm, setShowForm] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -77,7 +80,33 @@ const Register = () => {
           </div>
         </div>
 
-        <FormRegister />
+        {/* Email toggle button */}
+        <button
+          onClick={() => setShowForm((prev) => !prev)}
+          className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-sm font-medium py-2.5 rounded-xl transition-colors mb-4"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            />
+          </svg>
+          {showForm ? "Hide email form" : "Continue with Email"}
+        </button>
+
+        {/* Collapsible form */}
+        {showForm && (
+          <div className="mt-2">
+            <FormRegister />
+          </div>
+        )}
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{" "}
