@@ -19,7 +19,7 @@ Always start services in this order:
 
 ```
 1. docker compose up -d     → PostgreSQL must be running first
-2. ./mvnw spring-boot:run   → Backend connects to PostgreSQL on startup
+2. export $(cat .env | xargs) && ./mvnw spring-boot:run   → Backend connects to PostgreSQL on startup
 3. npm run dev              → Frontend connects to the backend API
 ```
 
@@ -54,7 +54,7 @@ docker compose down
 cd backend
 cp src/main/resources/application.example.yml src/main/resources/application.yml
 # Edit application.yml if needed (DB credentials, JWT secret, OAuth keys)
-./mvnw spring-boot:run
+export $(cat .env | xargs) && ./mvnw spring-boot:run
 ```
 
 The API will start on `http://localhost:8080`.
