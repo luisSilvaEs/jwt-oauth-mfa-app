@@ -6,7 +6,7 @@ export const apiFetch = async (path: string, options: RequestInit = {}) => {
     const response = await fetch( `${BASE_URL}${path}`, {
         ...options,
         headers: {
-            "Content-Type": "aplication/json",
+            "Content-Type": "application/json",
             ...(token ? {Authorization: `Bearer ${token}`} : {}),
             ...options.headers,
         }
@@ -15,6 +15,12 @@ export const apiFetch = async (path: string, options: RequestInit = {}) => {
     if(!response.ok) 
         throw new Error(`${response.status}`)
     
-    return response.json()
+    const text = await response.text();
+    
+    try {
+    return JSON.parse(text);
+    } catch {
+    return text;
+    }
 
 }
