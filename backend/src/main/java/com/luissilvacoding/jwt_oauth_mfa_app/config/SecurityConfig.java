@@ -17,6 +17,8 @@ import java.util.List;
 
 import com.luissilvacoding.jwt_oauth_mfa_app.handler.OAuth2SuccessHandler;
 
+import org.springframework.security.config.http.SessionCreationPolicy;
+
 /**
  * - @Configuration Tells Spring this class contains setup/configuration code,
  * not business logic.
@@ -50,7 +52,8 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/register",
