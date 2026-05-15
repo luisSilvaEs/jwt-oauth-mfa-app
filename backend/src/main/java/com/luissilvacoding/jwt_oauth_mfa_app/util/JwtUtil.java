@@ -23,9 +23,11 @@ public class JwtUtil {
     private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final long EXPIRATION_MS = 1000 * 60 * 60 * 24; // 24 hours
 
-    public String generateToken(String email) {
+    public String generateToken(String email, String provider, boolean mfaEnabled) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("provider", provider)
+                .claim("mfaEnabled", mfaEnabled)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .signWith(secretKey)

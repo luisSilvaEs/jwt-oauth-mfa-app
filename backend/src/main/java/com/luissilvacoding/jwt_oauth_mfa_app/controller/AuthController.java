@@ -122,7 +122,7 @@ public class AuthController {
                     if (user.isMfaEnabled()) {
                         return ResponseEntity.ok(new MfaRequiredResponse(true, user.getEmail()));
                     }
-                    String token = jwtUtil.generateToken(user.getEmail());
+                    String token = jwtUtil.generateToken(user.getEmail(), user.getProvider(), user.isMfaEnabled());
                     return ResponseEntity.ok(new LoginResponse(token));
                 })
                 .orElseGet(() -> ResponseEntity.status(401).body(new ErrorResponse("Invalid credentials")));
@@ -154,7 +154,7 @@ public class AuthController {
                     if (!mfaService.verifyCode(user.getMfaSecret(), body.code)) {
                         return ResponseEntity.status(401).body(new ErrorResponse("Invalid MFA code"));
                     }
-                    String token = jwtUtil.generateToken(user.getEmail());
+                    String token = jwtUtil.generateToken(user.getEmail(), user.getProvider(), user.isMfaEnabled());
                     return ResponseEntity.ok(new LoginResponse(token));
                 })
                 .orElseGet(() -> ResponseEntity.status(404).body(new ErrorResponse("User not found")));
