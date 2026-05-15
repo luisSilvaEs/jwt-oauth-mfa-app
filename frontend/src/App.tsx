@@ -2,6 +2,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WorkInProgress from "./components/WorkInProgress";
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import MfaVerify from "./pages/MfaVerify";
+import MfaSetup from "./pages/MfaSetUp";
 
 export default function App() {
   return (
@@ -9,19 +13,10 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           {/* Public routes */}
-          <Route path="/login" element={<WorkInProgress pageName="Login" />} />
-          <Route
-            path="/register"
-            element={<WorkInProgress pageName="Register" />}
-          />
-          <Route
-            path="/mfa/setup"
-            element={<WorkInProgress pageName="MFA Setup" />}
-          />
-          <Route
-            path="/mfa/verify"
-            element={<WorkInProgress pageName="MFA Verify" />}
-          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/mfa/setup" element={<MfaSetup />} />
+          <Route path="/mfa/verify" element={<MfaVerify />} />
 
           {/* Protected routes */}
           <Route

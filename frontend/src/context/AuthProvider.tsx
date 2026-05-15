@@ -11,10 +11,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [user, setUser] = useState<User | null>(null);
 
-  function login(token: string, user: User) {
+  function login(token: string) {
     localStorage.setItem("token", token);
+    const payload = JSON.parse(atob(token.split(".")[1] || ""));
+    setUser({
+      email: payload.sub,
+      provider: payload.provider ?? "LOCAL",
+      mfaEnabled: payload.mfaEnabled ?? false,
+    });
     setToken(token);
-    setUser(user);
   }
 
   function logout() {

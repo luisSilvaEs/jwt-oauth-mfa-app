@@ -92,11 +92,19 @@ public class AuthController {
     @Operation(summary = "Login", description = "Looks up the user by email and verifies the password, returns a signed JWT token on success")
     @RequestBody(required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginRequest.class)))
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Returns a signed JWT token", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
-                        {
-                          "token": "eyJhbGciOiJIUzI1NiJ9..."
-                        }
-                    """))),
+            @ApiResponse(responseCode = "200", description = "Returns a JWT token if MFA is disabled, or an MFA challenge if MFA is enabled", content = @Content(mediaType = "application/json", examples = {
+                    @ExampleObject(name = "MFA disabled — JWT returned", value = """
+                                {
+                                  "token": "eyJhbGciOiJIUzI1NiJ9..."
+                                }
+                            """),
+                    @ExampleObject(name = "MFA enabled — MFA challenge returned", value = """
+                                {
+                                  "mfaRequired": true,
+                                  "email": "mfatest@example.com"
+                                }
+                            """)
+            })),
             @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
                         {
                           "error": "Invalid credentials"
@@ -114,7 +122,7 @@ public class AuthController {
                     if (user.isMfaEnabled()) {
                         return ResponseEntity.ok(new MfaRequiredResponse(true, user.getEmail()));
                     }
-                    String token = jwtUtil.generateToken(user.getEmail());
+                    String token = jwtUtil.generateToken(user.getEmail(), user.getProvider(), user.isMfaEnabled());
                     return ResponseEntity.ok(new LoginResponse(token));
                 })
                 .orElseGet(() -> ResponseEntity.status(401).body(new ErrorResponse("Invalid credentials")));
@@ -146,7 +154,7 @@ public class AuthController {
                     if (!mfaService.verifyCode(user.getMfaSecret(), body.code)) {
                         return ResponseEntity.status(401).body(new ErrorResponse("Invalid MFA code"));
                     }
-                    String token = jwtUtil.generateToken(user.getEmail());
+                    String token = jwtUtil.generateToken(user.getEmail(), user.getProvider(), user.isMfaEnabled());
                     return ResponseEntity.ok(new LoginResponse(token));
                 })
                 .orElseGet(() -> ResponseEntity.status(404).body(new ErrorResponse("User not found")));

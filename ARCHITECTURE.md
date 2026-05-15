@@ -41,12 +41,12 @@ backend/
 
 frontend/
 src/
-├── api/
+├── api/                        # API call functions
 │   └── client.ts
-├── context/
+├── context/                    # AuthContext (JWT state, user info)
 │   ├── AuthContext.ts
 │   └── AuthProvider.tsx
-├── hooks/
+├── hooks/                      # useAuth, useMfa custom hooks
 │   └── useAuth.ts
 ├── pages/
 │   ├── Login.tsx
@@ -58,7 +58,7 @@ src/
 ├── components/
 │   ├── ProtectedRoute.tsx
 │   └── WorkInProgress.tsx
-├── types/
+├── types/                      # TypeScript interfaces/types
 │   └── auth.ts
 ├── App.tsx
 └── main.tsx

@@ -5,7 +5,7 @@ import type { User } from "../types/auth";
 interface AuthContextType {
     token: string | null
     user: User | null 
-    login: (token: string, user: User) => void
+    login: (token: string) => void
     logout: () => void
     isAuthenticated: boolean
 }
