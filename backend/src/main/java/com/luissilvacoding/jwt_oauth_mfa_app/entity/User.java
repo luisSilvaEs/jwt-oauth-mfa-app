@@ -26,6 +26,9 @@ public class User {
     @Column(nullable = false)
     private String role = "ROLE_USER";
 
+    @Column(nullable = false)
+    private String provider = "LOCAL";
+
     /**
      * Hibernate looks at the Java field name and converts it automatically using
      * its naming strategy. mfaEnabled becomes mfa_enabled in the DB, mfaSecret
@@ -88,6 +91,14 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
 
     public boolean isMfaEnabled() {
