@@ -1,3 +1,14 @@
+## 4.0.0 - 2026-05-15
+
+**Front end integration with MFA Endpoints**
+
+- Types & AuthContext
+- Routing & Protected Routes
+- Auth Pages
+- MFA Setup Page
+
+---
+
 ## 3.0.0 - 2026-05-14
 
 **Backend for OAuth and MFA completed**
