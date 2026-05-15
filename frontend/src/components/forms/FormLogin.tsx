@@ -23,12 +23,13 @@ const FormLogin = () => {
         method: "POST",
         body: JSON.stringify(form),
       });
-
+      console.log("Submit", data);
       if (data.mfaRequired) {
         // Pass email to MfaVerify via location state
         navigate("/mfa/verify", { state: { email: data.email } });
-      } else {
-        navigate("/mfa/login");
+      } else if (data.token) {
+        navigate("/mfa/setup", { state: { token: data.token } });
+        console.log("Set up, token:", data.token);
       }
     } catch (err: any) {
       setError(err.message ?? "Invalid credentials");

@@ -4,6 +4,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import WorkInProgress from "./components/WorkInProgress";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import MfaVerify from "./pages/MfaVerify";
+import MfaSetup from "./pages/MfaSetUp";
 
 export default function App() {
   return (
@@ -13,14 +15,8 @@ export default function App() {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route
-            path="/mfa/setup"
-            element={<WorkInProgress pageName="MFA Setup" />}
-          />
-          <Route
-            path="/mfa/verify"
-            element={<WorkInProgress pageName="MFA Verify" />}
-          />
+          <Route path="/mfa/setup" element={<MfaSetup />} />
+          <Route path="/mfa/verify" element={<MfaVerify />} />
 
           {/* Protected routes */}
           <Route

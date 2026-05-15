@@ -12,5 +12,5 @@ export interface AuthResponse {
 
 export interface MfaSetupResponse {
   secret: string
-  qrCodeUri: string
+  qrCode: string
 }
