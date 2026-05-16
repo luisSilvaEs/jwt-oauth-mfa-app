@@ -49,7 +49,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
 
         // Issue your own JWT exactly like the regular login does
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getProvider(), user.isMfaEnabled());
 
         // Redirect to frontend with the token as a query param
         response.sendRedirect("http://localhost:5173/oauth/callback?token=" + token);
