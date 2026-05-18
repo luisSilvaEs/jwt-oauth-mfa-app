@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { apiFetch } from "../api/client";
 import JwtInspector from "../components/dashboard/JwtInspector";
+import SessionInfo from "../components/dashboard/SessionInfo";
 import type { MeResponse } from "../types/auth";
 
 interface UserProfile {
@@ -74,6 +75,7 @@ const Home = () => {
         <div className="xl:col-span-2">
           <JwtInspector token={token} />
         </div>
+        <SessionInfo user={user} loading={loadingUser} />
       </main>
     </div>
   );

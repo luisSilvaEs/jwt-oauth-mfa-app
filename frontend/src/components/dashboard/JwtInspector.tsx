@@ -8,6 +8,13 @@ function b64decode(str: string) {
   }
 }
 
+function formatValue(key: string, val: unknown): string {
+  if (key === "exp" || key === "iat") {
+    return new Date((val as number) * 1000).toLocaleTimeString();
+  }
+  return String(val);
+}
+
 const Section = ({
   label,
   color,
@@ -41,13 +48,6 @@ const Section = ({
     </div>
   );
 };
-
-function formatValue(key: string, val: unknown): string {
-  if (key === "exp" || key === "iat") {
-    return new Date((val as number) * 1000).toLocaleTimeString();
-  }
-  return String(val);
-}
 
 function formatDuration(ms: number) {
   const s = Math.floor(ms / 1000);
