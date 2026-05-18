@@ -6,12 +6,12 @@ import java.time.LocalDateTime;
 @Schema(description = "Response returned for /me")
 public class MeResponse {
 
-    protected Long id;
-    protected String email;
-    protected String provider;
-    protected String name;
-    protected boolean mfaEnabled;
-    protected LocalDateTime createdAt;
+    private Long id;
+    private String email;
+    private String provider;
+    private String name;
+    private boolean mfaEnabled;
+    private LocalDateTime createdAt;
 
     public MeResponse(Long id, String email, String name, String provider, boolean mfaEnabled,
             LocalDateTime createdAt) {
@@ -22,4 +22,29 @@ public class MeResponse {
         this.mfaEnabled = mfaEnabled;
         this.createdAt = createdAt;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public boolean isMfaEnabled() {
+        return mfaEnabled;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
 }

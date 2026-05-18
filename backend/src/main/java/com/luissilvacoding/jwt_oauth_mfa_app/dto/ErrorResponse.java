@@ -6,9 +6,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class ErrorResponse {
 
     @Schema(description = "Error message", example = "Invalid credentials")
-    protected String error;
+    private String error;
 
     public ErrorResponse(String error) {
         this.error = error;
     }
+
+    public String getResponse() {
+        return error;
+    }
+
 }
