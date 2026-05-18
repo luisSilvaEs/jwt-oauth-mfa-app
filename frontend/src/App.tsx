@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import MfaVerify from "./pages/MfaVerify";
 import MfaSetup from "./pages/MfaSetUp";
+import Profile from "./pages/Profile";
 
 import Home from "./pages/Home";
 
@@ -33,7 +34,7 @@ export default function App() {
             path="/profile"
             element={
               <ProtectedRoute>
-                <WorkInProgress pageName="Profile" />
+                <Profile />
               </ProtectedRoute>
             }
           />
