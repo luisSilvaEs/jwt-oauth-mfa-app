@@ -4,6 +4,11 @@ import useAuth from "../hooks/useAuth";
 import { apiFetch } from "../api/client";
 import JwtInspector from "../components/dashboard/JwtInspector";
 import SessionInfo from "../components/dashboard/SessionInfo";
+import MfaStatus from "../components/dashboard/MfaStatus";
+import TokenLifecycle from "../components/dashboard/TokenLifecycle";
+import OAuthScopes from "../components/dashboard/OAuthScopes";
+import ApiTester from "../components/dashboard/ApiTester";
+import AuthEventLog from "../components/dashboard/AuthEventLog";
 import type { MeResponse } from "../types/auth";
 
 interface UserProfile {
@@ -76,6 +81,15 @@ const Home = () => {
           <JwtInspector token={token} />
         </div>
         <SessionInfo user={user} loading={loadingUser} />
+        <MfaStatus user={user} loading={loadingUser} />
+        <TokenLifecycle token={token} />
+        <OAuthScopes user={user} />
+        <div className="lg:col-span-2 xl:col-span-2">
+          <ApiTester />
+        </div>
+        <div className="lg:col-span-2 xl:col-span-3">
+          <AuthEventLog />
+        </div>
       </main>
     </div>
   );
