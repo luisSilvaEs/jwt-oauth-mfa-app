@@ -7,6 +7,8 @@ import Login from "./pages/Login";
 import MfaVerify from "./pages/MfaVerify";
 import MfaSetup from "./pages/MfaSetUp";
 
+import Home from "./pages/Home";
+
 export default function App() {
   return (
     <AuthProvider>
@@ -23,7 +25,7 @@ export default function App() {
             path="/home"
             element={
               <ProtectedRoute>
-                <WorkInProgress pageName="Home / Dashboard" />
+                <Home />
               </ProtectedRoute>
             }
           />
