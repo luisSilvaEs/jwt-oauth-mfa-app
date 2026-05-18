@@ -6,9 +6,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class LoginResponse {
 
     @Schema(description = "Signed JWT token", example = "eyJhbGciOiJIUzI1NiJ9...")
-    public String token;
+    protected String token;
 
     public LoginResponse(String token) {
         this.token = token;
     }
+
+    public String getToken() {
+        return token;
+    }
+
 }

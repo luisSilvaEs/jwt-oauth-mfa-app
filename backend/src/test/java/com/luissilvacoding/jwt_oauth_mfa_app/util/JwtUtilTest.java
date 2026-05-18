@@ -16,32 +16,34 @@ class JwtUtilTest {
 
     @Test
     void generateToken_shouldReturnNonNullToken() {
-        String token = jwtUtil.generateToken("luis@example.com");
+        String token = jwtUtil.generateToken("luis@example.com", "LOCAL", false);
         assertNotNull(token);
     }
 
     @Test
     void generateToken_shouldReturnNonEmptyToken() {
-        String token = jwtUtil.generateToken("luis@example.com");
+        String token = jwtUtil.generateToken("luis@example.com", "LOCAL", false);
         assertFalse(token.isEmpty());
     }
 
     @Test
     void extractEmail_shouldReturnCorrectEmail() {
         String email = "luis@example.com";
-        String token = jwtUtil.generateToken(email);
+        String provider = "LOCAL";
+        boolean mfaEnabled = false;
+        String token = jwtUtil.generateToken(email, provider, mfaEnabled);
         assertEquals(email, jwtUtil.extractEmail(token));
     }
 
     @Test
     void isTokenValid_shouldReturnTrueForValidToken() {
-        String token = jwtUtil.generateToken("luis@example.com");
+        String token = jwtUtil.generateToken("luis@example.com", "LOCAL", false);
         assertTrue(jwtUtil.isTokenValid(token));
     }
 
     @Test
     void isTokenValid_shouldReturnFalseForTamperedToken() {
-        String token = jwtUtil.generateToken("luis@example.com");
+        String token = jwtUtil.generateToken("luis@example.com", "LOCAL", false);
         String tampered = token + "corrupted";
         assertFalse(jwtUtil.isTokenValid(tampered));
     }
@@ -53,8 +55,8 @@ class JwtUtilTest {
 
     @Test
     void generateToken_differentEmailsShouldProduceDifferentTokens() {
-        String token1 = jwtUtil.generateToken("luis@example.com");
-        String token2 = jwtUtil.generateToken("other@example.com");
+        String token1 = jwtUtil.generateToken("luis@example.com", "LOCAL", false);
+        String token2 = jwtUtil.generateToken("other@example.com", "LOCAL", false);
         assertNotEquals(token1, token2);
     }
 }
