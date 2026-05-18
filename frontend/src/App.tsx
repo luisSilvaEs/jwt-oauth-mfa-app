@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import MfaVerify from "./pages/MfaVerify";
 import MfaSetup from "./pages/MfaSetUp";
 import Profile from "./pages/Profile";
+import OAuthCallback from "./pages/OAuthCallback";
 
 import Home from "./pages/Home";
 
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/mfa/setup" element={<MfaSetup />} />
           <Route path="/mfa/verify" element={<MfaVerify />} />
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
 
           {/* Protected routes */}
           <Route
