@@ -32,7 +32,7 @@ const Login = () => {
         {/* OAuth Buttons */}
         <div className="flex gap-3 mb-6">
           <a
-            href="http://localhost:8080/oauth2/authorization/google"
+            href="http://localhost/oauth2/authorization/google"
             className="flex-1 flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-sm font-medium py-2.5 rounded-xl transition-colors"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -56,7 +56,7 @@ const Login = () => {
             Google
           </a>
           <a
-            href="http://localhost:8080/oauth2/authorization/github"
+            href="http://localhost/oauth2/authorization/github"
             className="flex-1 flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-sm font-medium py-2.5 rounded-xl transition-colors"
           >
             <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">

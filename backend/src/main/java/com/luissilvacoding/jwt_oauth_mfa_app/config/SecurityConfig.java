@@ -33,67 +33,71 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
-    private final OAuth2FailureHandler oAuth2FailureHandler;
+        private final JwtFilter jwtFilter;
+        private final OAuth2SuccessHandler oAuth2SuccessHandler;
+        private final OAuth2FailureHandler oAuth2FailureHandler;
 
-    public SecurityConfig(JwtFilter jwtFilter, OAuth2SuccessHandler oAuth2SuccessHandler,
-            OAuth2FailureHandler oAuth2FailureHandler) {
-        this.jwtFilter = jwtFilter;
-        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
-        this.oAuth2FailureHandler = oAuth2FailureHandler;
-    }
+        public SecurityConfig(JwtFilter jwtFilter, OAuth2SuccessHandler oAuth2SuccessHandler,
+                        OAuth2FailureHandler oAuth2FailureHandler) {
+                this.jwtFilter = jwtFilter;
+                this.oAuth2SuccessHandler = oAuth2SuccessHandler;
+                this.oAuth2FailureHandler = oAuth2FailureHandler;
+        }
 
-    /**
-     * - @Bean
-     * Tells Spring to take the return value of this method
-     * (SecurityFilterChain) and manage it — similar to @Component but used
-     * inside @Configuration classes for methods instead of classes.
-     *
-     */
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/register",
-                                "/api/auth/login",
-                                "/api/auth/mfa-login",
-                                // Swagger URLs ↓
-                                "/swagger-ui.html",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/v3/api-docs.yaml")
-                        .permitAll()
-                        .anyRequest().authenticated())
-                .oauth2Login(oauth -> oauth
-                        .successHandler(oAuth2SuccessHandler)
-                        .failureHandler(oAuth2FailureHandler))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        /**
+         * - @Bean
+         * Tells Spring to take the return value of this method
+         * (SecurityFilterChain) and manage it — similar to @Component but used
+         * inside @Configuration classes for methods instead of classes.
+         *
+         */
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(
+                                                                "/api/health",
+                                                                "/api/auth/register",
+                                                                "/api/auth/login",
+                                                                "/api/auth/mfa-login",
+                                                                // Swagger URLs ↓
+                                                                "/swagger-ui.html",
+                                                                "/swagger-ui/**",
+                                                                "/v3/api-docs/**",
+                                                                "/v3/api-docs.yaml")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
+                                .oauth2Login(oauth -> oauth
+                                                .successHandler(oAuth2SuccessHandler)
+                                                .failureHandler(oAuth2FailureHandler))
+                                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedOrigins(List.of(
+                                "http://localhost:5173", // Vite dev server
+                                "http://localhost" // nginx (port 80)
+                ));
+                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                config.setAllowedHeaders(List.of("*"));
+                config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", config);
+                return source;
+        }
 
 }

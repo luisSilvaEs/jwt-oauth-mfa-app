@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User; // ← add this
+import org.springframework.security.core.userdetails.UserDetails; // ← add this
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -36,8 +38,17 @@ public class JwtFilter extends OncePerRequestFilter {
             if (jwtUtil.isTokenValid(token)) {
                 String email = jwtUtil.extractEmail(token);
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email,
-                        null, List.of());
+                // ✅ Wrap the email in a UserDetails object so that
+                // @AuthenticationPrincipal UserDetails resolves correctly
+                UserDetails userDetails = User.withUsername(email)
+                        .password("") // not used — JWT auth, no password check
+                        .authorities(List.of()) // add roles here if needed later
+                        .build();
+
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, // ← principal is now UserDetails
+                        null,
+                        userDetails.getAuthorities());
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }

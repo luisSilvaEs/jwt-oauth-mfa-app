@@ -32,7 +32,11 @@ const FormLogin = () => {
         console.log("Set up, token:", data.token);
       }
     } catch (err: any) {
+      console.error("Error", err);
       setError(err.message ?? "Invalid credentials");
+      if (err.message == 401) {
+        alert("Wrong user or password");
+      }
     } finally {
       setLoading(false);
     }

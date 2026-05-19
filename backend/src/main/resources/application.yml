@@ -23,14 +23,14 @@ spring:
             scope:
               - email
               - profile
-            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}" # ← dynamic
           github:
             client-id: ${OAUTH_GITHUB_CLIENT_ID}
             client-secret: ${OAUTH_GITHUB_CLIENT_SECRET}
             scope:
               - user:email
               - read:user
-            redirect-uri: "http://localhost:8080/login/oauth2/code/github"
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}" # ← dynamic
 
 server:
   port: 8080
@@ -41,3 +41,11 @@ springdoc:
     operations-sorter: alpha
   api-docs:
     path: /v3/api-docs
+
+logging:
+  level:
+    root: WARN # suppress Spring noise
+    com.luissilvacoding.jwt_oauth_mfa_app: DEBUG # your code at DEBUG level
+    org.springframework.security: DEBUG # useful for JWT/auth issues
+  pattern:
+    console: "%d{HH:mm:ss} [${INSTANCE_ID}] %-5level %logger{36} - %msg%n"
