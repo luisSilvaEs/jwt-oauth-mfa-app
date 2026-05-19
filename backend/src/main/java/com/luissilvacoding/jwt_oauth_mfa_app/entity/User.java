@@ -49,6 +49,8 @@ public class User {
 
     private String mfaSecret;
 
+    private String mfaTempSecret;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -124,4 +126,13 @@ public class User {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public String getMfaTempSecret() {
+        return mfaTempSecret;
+    }
+
+    public void setMfaTempSecret(String mfaTempSecret) {
+        this.mfaTempSecret = mfaTempSecret;
+    }
+
 }

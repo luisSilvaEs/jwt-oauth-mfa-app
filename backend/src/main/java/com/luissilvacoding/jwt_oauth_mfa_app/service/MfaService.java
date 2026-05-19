@@ -37,7 +37,12 @@ public class MfaService {
     public boolean verifyCode(String secret, String code) {
         TimeProvider timeProvider = new SystemTimeProvider();
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
-        CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+        DefaultCodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+
+        // ✅ Allow 1 period either side (±30s) — handles UI submission delay
+        verifier.setTimePeriod(30);
+        verifier.setAllowedTimePeriodDiscrepancy(1);
+
         return verifier.isValidCode(secret, code);
     }
 }
