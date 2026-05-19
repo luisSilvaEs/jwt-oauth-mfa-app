@@ -104,8 +104,6 @@ Docker Compose will pick up the variables from `backend/.env` automatically.
 
 ```bash
 cd frontend
-cp .env.example .env
-# Edit .env — set VITE_API_BASE_URL to http://localhost (nginx, not the backend directly)
 npm install
 npm run dev
 ```
