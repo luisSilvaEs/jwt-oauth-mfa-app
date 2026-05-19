@@ -1,106 +1,126 @@
 # =============================================================================
 # docker-compose.yml
-# jwt-oauth-mfa-app — Development Database Stack
+# jwt-oauth-mfa-app — Full Stack with nginx Load Balancer
 # =============================================================================
-# This file defines the services that Docker will run for local development.
-# We only containerize the DATABASE layer here — the backend (Spring Boot) and
-# frontend (React) run locally for a faster dev experience (hot reload, etc.).
 #
 # Usage:
-#   Start:   docker compose up -d
-#   Stop:    docker compose down
-#   Logs:    docker compose logs -f
-#   Reset:   docker compose down -v   ← WARNING: deletes all DB data
+#   Build & Start:  docker compose up -d --build
+#   Stop:           docker compose down
+#   Logs:           docker compose logs -f
+#   Reset DB:       docker compose down -v   ← WARNING: deletes all DB data
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# NAMED VOLUMES
-# Docker volumes are how we persist data across container restarts.
-# Without this, every `docker compose down` would wipe your database.
-# -----------------------------------------------------------------------------
 volumes:
-  postgres_data:   # Stores PostgreSQL data files
-  pgadmin_data:    # Stores pgAdmin settings and saved connections
+  postgres_data:
+  pgadmin_data:
 
-# -----------------------------------------------------------------------------
-# SERVICES
-# Each "service" is a container. We define two: the database and a DB GUI.
-# -----------------------------------------------------------------------------
 services:
 
   # ---------------------------------------------------------------------------
-  # SERVICE 1: PostgreSQL
-  # This is the main database for our auth app.
-  # Spring Boot will connect to this via JDBC on port 5432.
+  # PostgreSQL — shared by all backend instances
   # ---------------------------------------------------------------------------
   postgres:
-    image: postgres:16-alpine          # Alpine = smaller image, same functionality
-    container_name: jwt_mfa_postgres   # Fixed name so it's easy to reference
-
-    # Environment variables configure the Postgres instance on first startup.
-    # These MUST match what you'll put in your Spring Boot application.yml later.
+    image: postgres:16-alpine
+    container_name: jwt_mfa_postgres
     environment:
-      POSTGRES_DB: authdb              # The database our app will use
-      POSTGRES_USER: authuser          # The DB user Spring Boot will authenticate as
-      POSTGRES_PASSWORD: authpass      # Change this if deploying anywhere non-local
-
-    # Port mapping: host:container
-    # This means you can connect to Postgres from your machine at localhost:5432
+      POSTGRES_DB: authdb
+      POSTGRES_USER: authuser
+      POSTGRES_PASSWORD: authpass
     ports:
       - "5432:5432"
-
-    # Mount the named volume so data survives container restarts
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-    # Health check: Docker will poll this command to know if Postgres is ready.
-    # Other services can use `depends_on: condition: service_healthy` to wait for it.
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
-      interval: 10s   # Check every 10 seconds
-      timeout: 5s     # Fail if no response within 5 seconds
-      retries: 5      # Mark as unhealthy after 5 consecutive failures
-
-    # Restart policy: automatically restart if the container crashes
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
-  # SERVICE 2: pgAdmin 4
-  # A web-based GUI for browsing your PostgreSQL database.
-  # Useful for inspecting tables, running queries, and debugging data.
-  # Access it at: http://localhost:5050
-  # Login with the email/password defined below.
+  # pgAdmin — DB GUI at http://localhost:5050
   # ---------------------------------------------------------------------------
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: jwt_mfa_pgadmin
-
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@local.dev     # Login email for pgAdmin UI
-      PGADMIN_DEFAULT_PASSWORD: adminpass        # Login password for pgAdmin UI
-      PGADMIN_CONFIG_SERVER_MODE: "False"        # Runs in desktop mode (no multi-user)
-
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: adminpass
+      PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
-      - "5050:80"   # pgAdmin UI will be available at http://localhost:5050
-
+      - "5050:80"
     volumes:
-      - pgadmin_data:/var/lib/pgadmin   # Persist pgAdmin settings
-
-    # Wait for Postgres to be healthy before starting pgAdmin
+      - pgadmin_data:/var/lib/pgadmin
     depends_on:
       postgres:
         condition: service_healthy
+    restart: unless-stopped
 
+  # ---------------------------------------------------------------------------
+  # Backend instances — Spring Boot × 3
+  # env_file loads everything from .env (JWT, OAuth secrets, etc.)
+  # environment: overrides only DB_URL (localhost → postgres) and adds INSTANCE_ID
+  # ---------------------------------------------------------------------------
+  backend-1:
+    build: ./backend
+    container_name: jwt_mfa_backend_1
+    env_file:
+      - backend/.env                                              # loads JWT, OAuth, DB creds
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/authdb      # overrides localhost in .env
+      INSTANCE_ID: backend-1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  backend-2:
+    build: ./backend
+    container_name: jwt_mfa_backend_2
+    env_file:
+      - backend/.env
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/authdb
+      INSTANCE_ID: backend-2
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  backend-3:
+    build: ./backend
+    container_name: jwt_mfa_backend_3
+    env_file:
+      - backend/.env
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/authdb
+      INSTANCE_ID: backend-3
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # nginx — load balancer at http://localhost:80
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: jwt_mfa_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend-1
+      - backend-2
+      - backend-3
     restart: unless-stopped
 
 # =============================================================================
-# SPRING BOOT CONNECTION REFERENCE
-# When you set up application.yml in the backend, use these values:
+# PORT SUMMARY
+#   http://localhost      → nginx (load balancer → backends)
+#   http://localhost:5432 → PostgreSQL (direct, for IDE/DBeaver connections)
+#   http://localhost:5050 → pgAdmin
 #
-#   spring:
-#     datasource:
-#       url: jdbc:postgresql://localhost:5432/authdb
-#       username: authuser
-#       password: authpass
-#
+# Backends are NOT exposed directly — all traffic goes through nginx on port 80.
 # =============================================================================

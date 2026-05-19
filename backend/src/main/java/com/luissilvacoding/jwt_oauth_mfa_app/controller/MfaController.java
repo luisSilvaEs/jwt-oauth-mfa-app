@@ -6,12 +6,12 @@ import com.luissilvacoding.jwt_oauth_mfa_app.service.MfaService;
 import dev.samstevens.totp.exceptions.QrGenerationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
-
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,14 +47,20 @@ public class MfaController {
           """)))
   })
   @PostMapping("/setup")
-  public ResponseEntity<?> setup(@AuthenticationPrincipal String email) throws QrGenerationException {
+  public ResponseEntity<?> setup(@AuthenticationPrincipal UserDetails userDetails)
+      throws QrGenerationException {
+
+    // ✅ FIX 1: extract email from UserDetails instead of injecting raw String
+    String email = userDetails.getUsername();
+
     User user = userRepository.findByEmail(email)
         .orElseThrow(() -> new RuntimeException("User not found"));
 
     String secret = mfaService.generateSecret();
     String qrCodeUri = mfaService.generateQrCodeDataUri(secret, user.getEmail());
 
-    user.setMfaSecret(secret);
+    // ✅ FIX 2: stage in mfaTempSecret — don't promote to real mfaSecret yet
+    user.setMfaTempSecret(secret);
     userRepository.save(user);
 
     return ResponseEntity.ok(Map.of(
@@ -83,18 +89,33 @@ public class MfaController {
           """)))
   })
   @PostMapping("/verify-setup")
-  public ResponseEntity<?> verifySetup(@AuthenticationPrincipal String email,
-      @org.springframework.web.bind.annotation.RequestBody Map<String, String> body) {
+  public ResponseEntity<?> verifySetup(
+      @AuthenticationPrincipal UserDetails userDetails,
+      @RequestBody Map<String, String> body) {
+
+    // ✅ FIX 1: extract email from UserDetails
+    String email = userDetails.getUsername();
+
     User user = userRepository.findByEmail(email)
         .orElseThrow(() -> new RuntimeException("User not found"));
 
+    // ✅ FIX 2: verify against the TEMP secret, not the live mfaSecret
+    String tempSecret = user.getMfaTempSecret();
+    if (tempSecret == null) {
+      return ResponseEntity.badRequest()
+          .body(Map.of("message", "MFA setup not initiated — call /setup first"));
+    }
+
     String code = body.get("code");
-    boolean valid = mfaService.verifyCode(user.getMfaSecret(), code);
+    boolean valid = mfaService.verifyCode(tempSecret, code);
 
     if (!valid) {
       return ResponseEntity.badRequest().body(Map.of("message", "Invalid code"));
     }
 
+    // ✅ FIX 3: only NOW promote temp → real, and clear the staging field
+    user.setMfaSecret(tempSecret);
+    user.setMfaTempSecret(null);
     user.setMfaEnabled(true);
     userRepository.save(user);
 
