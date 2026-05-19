@@ -63,9 +63,16 @@ const Profile = () => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    apiFetch("/user/me")
+    const controller = new AbortController();
+
+    apiFetch("/user/me", { signal: controller.signal })
       .then((data: MeResponse) => setUser(data))
-      .catch(() => setError("Could not load your profile. Please try again."));
+      .catch((err) => {
+        if (err.name === "AbortError") return; // ← ignore cancelled requests
+        setError("Could not load your profile. Please try again.");
+      });
+
+    return () => controller.abort(); // ← cancel on unmount/re-run
   }, []);
 
   const handleLogout = () => {

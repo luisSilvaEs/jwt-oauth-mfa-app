@@ -23,14 +23,14 @@ spring:
             scope:
               - email
               - profile
-            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}" # ← dynamic
           github:
             client-id: ${OAUTH_GITHUB_CLIENT_ID}
             client-secret: ${OAUTH_GITHUB_CLIENT_SECRET}
             scope:
               - user:email
               - read:user
-            redirect-uri: "http://localhost:8080/login/oauth2/code/github"
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}" # ← dynamic
 
 server:
   port: 8080
