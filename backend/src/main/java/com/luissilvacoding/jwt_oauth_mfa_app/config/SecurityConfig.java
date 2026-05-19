@@ -16,6 +16,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import java.util.List;
 
 import com.luissilvacoding.jwt_oauth_mfa_app.handler.OAuth2SuccessHandler;
+import com.luissilvacoding.jwt_oauth_mfa_app.handler.OAuth2FailureHandler;
 
 import org.springframework.security.config.http.SessionCreationPolicy;
 
@@ -34,10 +35,13 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
 
-    public SecurityConfig(JwtFilter jwtFilter, OAuth2SuccessHandler oAuth2SuccessHandler) {
+    public SecurityConfig(JwtFilter jwtFilter, OAuth2SuccessHandler oAuth2SuccessHandler,
+            OAuth2FailureHandler oAuth2FailureHandler) {
         this.jwtFilter = jwtFilter;
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
+        this.oAuth2FailureHandler = oAuth2FailureHandler;
     }
 
     /**
@@ -67,7 +71,8 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(oauth -> oauth
-                        .successHandler(oAuth2SuccessHandler))
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

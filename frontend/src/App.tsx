@@ -6,6 +6,10 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import MfaVerify from "./pages/MfaVerify";
 import MfaSetup from "./pages/MfaSetUp";
+import Profile from "./pages/Profile";
+import OAuthCallback from "./pages/OAuthCallback";
+
+import Home from "./pages/Home";
 
 export default function App() {
   return (
@@ -17,13 +21,14 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/mfa/setup" element={<MfaSetup />} />
           <Route path="/mfa/verify" element={<MfaVerify />} />
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
 
           {/* Protected routes */}
           <Route
             path="/home"
             element={
               <ProtectedRoute>
-                <WorkInProgress pageName="Home / Dashboard" />
+                <Home />
               </ProtectedRoute>
             }
           />
@@ -31,7 +36,7 @@ export default function App() {
             path="/profile"
             element={
               <ProtectedRoute>
-                <WorkInProgress pageName="Profile" />
+                <Profile />
               </ProtectedRoute>
             }
           />

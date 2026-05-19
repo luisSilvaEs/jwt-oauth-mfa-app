@@ -95,26 +95,26 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Returns a JWT token if MFA is disabled, or an MFA challenge if MFA is enabled", content = @Content(mediaType = "application/json", examples = {
                     @ExampleObject(name = "MFA disabled — JWT returned", value = """
                                 {
-                                  "token": "eyJhbGciOiJIUzI1NiJ9..."
+                                "token": "eyJhbGciOiJIUzI1NiJ9..."
                                 }
                             """),
                     @ExampleObject(name = "MFA enabled — MFA challenge returned", value = """
                                 {
-                                  "mfaRequired": true,
-                                  "email": "mfatest@example.com"
+                                "mfaRequired": true,
+                                "email": "mfatest@example.com"
                                 }
                             """)
             })),
             @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
                         {
-                          "error": "Invalid credentials"
+                        "error": "Invalid credentials"
                         }
                     """)))
     })
     @PostMapping("/login")
     public ResponseEntity<?> login(@org.springframework.web.bind.annotation.RequestBody LoginRequest body) {
-        String email = body.email;
-        String password = body.password;
+        String email = body.getEmail();
+        String password = body.getPassword();
 
         return userRepository.findByEmail(email)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
@@ -133,17 +133,17 @@ public class AuthController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Returns a signed JWT token", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
                         {
-                          "token": "eyJhbGciOiJIUzI1NiJ9..."
+                        "token": "eyJhbGciOiJIUzI1NiJ9..."
                         }
                     """))),
             @ApiResponse(responseCode = "401", description = "Invalid MFA code", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
                         {
-                          "error": "Invalid MFA code"
+                        "error": "Invalid MFA code"
                         }
                     """))),
             @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
                         {
-                          "error": "User not found"
+                        "error": "User not found"
                         }
                     """)))
     })
