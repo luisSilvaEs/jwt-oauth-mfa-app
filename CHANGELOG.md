@@ -1,3 +1,17 @@
+## 5.0.0 - 2026-05-19
+
+**Home page completed, Profile page and endpoint implementation **
+
+- Implement new endpoint (/me) used for profile page
+- Implement profile page
+- fix: add missing parameters to generateToken function due to new columns added to the DB table
+- Implement OAuth handlers success and failure
+- Implement dashboard filters
+- Fix DTO update fields modifiers (private) adding getters and setters
+- Implement SessionInfo
+
+---
+
 ## 4.0.0 - 2026-05-15
 
 **Front end integration with MFA Endpoints**
