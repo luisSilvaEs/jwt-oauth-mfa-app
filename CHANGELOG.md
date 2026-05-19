@@ -1,3 +1,16 @@
+## 6.0.0 - 2026-05-19
+
+**Dockerize backend to use nginx**
+
+- feat: configure nignx and dockerize backend, use round robin to balance load in 3 dockerized backend services
+- feat: update Oauth uris
+- fix: resolve MFA verify-setup 400 Invalid Code error
+- feat: add alert to improve feedback when user not found
+- docs: update documentation to set up the app
+- all flows tested
+
+---
+
 ## 5.0.0 - 2026-05-19
 
 **Home page completed, Profile page and endpoint implementation **
