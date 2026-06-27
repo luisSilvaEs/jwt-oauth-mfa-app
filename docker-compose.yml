@@ -34,6 +34,8 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - auth_network        # ← add this
 
   # ---------------------------------------------------------------------------
   # pgAdmin — DB GUI at http://localhost:5050
@@ -51,6 +53,8 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - auth_network        # ← add this
 
   # ---------------------------------------------------------------------------
   # Backend instances — Spring Boot × 3
