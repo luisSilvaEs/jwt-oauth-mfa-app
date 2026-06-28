@@ -26,6 +26,8 @@ services:
       POSTGRES_DB: authdb
       POSTGRES_USER: authuser
       POSTGRES_PASSWORD: authpass
+    ports:
+      - "5433:5432"   # offset to avoid conflict with Komodo's postgres on 5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -47,6 +49,8 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@local.dev
       PGADMIN_DEFAULT_PASSWORD: adminpass
       PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5051:80"     # offset to avoid conflict with Komodo's pgadmin on 5050
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
